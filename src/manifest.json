@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "MyFeed Prototype",
+  "version": "0.1.10",
+  "description": "RSS / Google News / Nitter RSS を画像付きでまとめて読むローカルフィードリーダー（72時間キャッシュ・カテゴリ開閉・重複話題の緑表示・上部操作エリア固定・テーマ対応）",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "MyFeedを開く"
+  }
+}
