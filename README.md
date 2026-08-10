@@ -20,12 +20,18 @@
 
 ## Edgeへの読み込み
 
-1. `release/myfeed-prototype-v0.1.10.zip` をダウンロードして展開
+1. このリポジトリをダウンロードまたはClone
 2. Edgeで `edge://extensions/` を開く
 3. 「開発者モード」をON
 4. 「展開して読み込み」を選択
-5. 展開したフォルダを指定
+5. リポジトリ内の `src` フォルダを指定
 
-ソースコードは `src/` に格納しています。
+## ファイル構成
+
+- `src/manifest.json` : Edge拡張機能設定
+- `src/service-worker.js` : 拡張機能アイコン押下時の画面起動
+- `src/dashboard.html` : MyFeed画面
+- `src/style-base.css` / `src/style-features.css` : デザイン
+- `src/dashboard-1.js` ～ `src/dashboard-4.js` : フィード取得・表示・重複判定などの処理
 
 > アイコンは検討中のため、v0.1.10では未実装です。
