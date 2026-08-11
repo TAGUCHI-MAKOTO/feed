@@ -327,9 +327,20 @@ async function v021EnhanceDuplicateGroups() {
   });
 
   const clusters = [...groups.values()].filter(group => group.length > 1);
+
+  const expandedClusters = clusters.map(cluster => {
+    const groupIds = new Set(cluster.map(article => article.duplicateGroupId).filter(Boolean));
+    if (!groupIds.size) return cluster;
+    const byId = new Map(cluster.map(article => [article.id, article]));
+    for (const article of allArticles) {
+      if (groupIds.has(article.duplicateGroupId) && !byId.has(article.id)) byId.set(article.id, article);
+    }
+    return [...byId.values()];
+  });
+
   const updates = [];
   let autoRead = 0;
-  for (const cluster of clusters) {
+  for (const cluster of expandedClusters) {
     const representative = chooseClusterRepresentative(cluster);
     const existingRepresentatives = cluster.filter(article => article.duplicateRepresentative);
     const groupUnread = existingRepresentatives.length
