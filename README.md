@@ -13,6 +13,7 @@
   - `https://www.youtube.com/@handle` を貼るだけでチャンネルIDを自動取得
   - `/channel/UC...` / `/user/...` / `/c/...` 形式にも対応
   - YouTube公式Atom `https://www.youtube.com/feeds/videos.xml?channel_id=...` へ自動変換して登録
+  - 既に登録済みのYouTubeチャンネルURLも起動時に同形式へ自動変換
   - 登録時の自動判定表示は「YouTube チャンネル」
 - 登録画面を1入力欄へ簡略化
   - `https://...` → WEB RSSとして判定
