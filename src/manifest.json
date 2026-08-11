@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.1.16",
-  "description": "RSS / Google News / Nitter RSS をまとめて読むローカルフィードリーダー（入力自動判定・表示名自動取得・可変サイドバー・サイトアイコン・バックアップ対応）",
+  "version": "0.1.17",
+  "description": "RSS / Atom / RSS 1.0 RDF / Google News / Nitter RSS をまとめて読むローカルフィードリーダー（旧RSS URL復旧・自動判定・カテゴリ・重複整理・バックアップ対応）",
   "permissions": [
     "storage",
     "tabs"
