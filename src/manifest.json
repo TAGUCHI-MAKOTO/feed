@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.2.1",
-  "description": "全既読時の自動送りと本文対応の高精度重複判定を追加したMyFeed（6並列更新・進捗メーター・YouTube・Copilotページ分離対応）",
+  "version": "0.2.2",
+  "description": "登録フィード検索と固定登録パネルを追加したMyFeed（自動送り・本文対応重複判定・6並列更新・Copilotページ分離対応）",
   "permissions": [
     "storage",
     "tabs"
