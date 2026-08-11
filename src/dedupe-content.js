@@ -7,9 +7,11 @@
 const V021_CONTENT_WINDOW_MS = 24 * 60 * 60 * 1000;
 const V021_BODY_WINDOW_MS = 18 * 60 * 60 * 1000;
 const V021_BODY_RETRY_MS = 24 * 60 * 60 * 1000;
+const V021_CONTENT_MAX_ARTICLES = 900;
 const V021_BODY_MAX_PAIRS = 18;
 const V021_BODY_MAX_ARTICLES = 10;
 const V021_BODY_CONCURRENCY = 3;
+const V021_BODY_CANDIDATE_BUFFER = 72;
 
 function v021NormalizeContentText(value = '') {
   return String(value || '')
@@ -21,20 +23,25 @@ function v021NormalizeContentText(value = '') {
     .trim();
 }
 
-function v021ContentBigrams(value = '') {
-  const text = v021NormalizeContentText(value).slice(0, 1800);
-  return rawBigrams(text);
+function v021PrepareContentArticle(article) {
+  const descriptionText = v021NormalizeContentText(article.description || '').slice(0, 1800);
+  return {
+    ...article,
+    _v021Time: new Date(article.publishedAt || article.fetchedAt || 0).getTime() || 0,
+    _v021Url: canonicalArticleUrl(article.url || ''),
+    _v021TitleBigrams: makeBigrams(article.title || ''),
+    _v021DescriptionText: descriptionText,
+    _v021DescriptionBigrams: descriptionText.length >= 35 ? rawBigrams(descriptionText) : null
+  };
 }
 
 function v021DescriptionSimilarity(a, b) {
-  const aText = v021NormalizeContentText(a.description || '');
-  const bText = v021NormalizeContentText(b.description || '');
-  if (aText.length < 35 || bText.length < 35) return 0;
-  return diceSimilarity(v021ContentBigrams(aText), v021ContentBigrams(bText));
+  if (!a._v021DescriptionBigrams || !b._v021DescriptionBigrams) return 0;
+  return diceSimilarity(a._v021DescriptionBigrams, b._v021DescriptionBigrams);
 }
 
 function v021TitleSimilarity(a, b) {
-  return diceSimilarity(makeBigrams(a.title || ''), makeBigrams(b.title || ''));
+  return diceSimilarity(a._v021TitleBigrams, b._v021TitleBigrams);
 }
 
 function v021StrongContentDuplicate(a, b, titleScore, descriptionScore) {
@@ -58,8 +65,13 @@ function v021ExtractMainText(html = '') {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const root = doc.querySelector('article, main, [role="main"]') || doc.body;
   if (!root) return '';
+
   const clone = root.cloneNode(true);
-  clone.querySelectorAll('script,style,noscript,nav,header,footer,aside,form,svg,canvas,iframe,.advertisement,.ads,.ad,.share,.social,.breadcrumb').forEach(node => node.remove());
+  clone.querySelectorAll(
+    'script,style,noscript,nav,header,footer,aside,form,svg,canvas,iframe,' +
+    '.advertisement,.ads,.ad,.share,.social,.breadcrumb'
+  ).forEach(node => node.remove());
+
   return String(clone.textContent || '')
     .normalize('NFKC')
     .replace(/\s+/g, ' ')
@@ -205,13 +217,21 @@ function v021PairPriority(pair) {
   return pair.titleScore * 0.62 + pair.descriptionScore * 0.38;
 }
 
+function v021PushBodyCandidate(buffer, pair) {
+  buffer.push(pair);
+  if (buffer.length <= V021_BODY_CANDIDATE_BUFFER * 2) return;
+  buffer.sort((a, b) => v021PairPriority(b) - v021PairPriority(a));
+  buffer.length = V021_BODY_CANDIDATE_BUFFER;
+}
+
 async function v021EnhanceDuplicateGroups() {
   const allArticles = await dbGetAllArticles();
   const cutoff = Date.now() - V021_CONTENT_WINDOW_MS;
   const recent = allArticles
     .filter(article => new Date(article.publishedAt || article.fetchedAt || 0).getTime() >= cutoff)
     .sort((a, b) => new Date(b.publishedAt || b.fetchedAt || 0).getTime() - new Date(a.publishedAt || a.fetchedAt || 0).getTime())
-    .slice(0, 1500);
+    .slice(0, V021_CONTENT_MAX_ARTICLES)
+    .map(v021PrepareContentArticle);
   if (recent.length < 2) return { groups: 0, autoRead: 0, bodyPairs: 0 };
 
   const parent = recent.map((_, index) => index);
@@ -243,29 +263,27 @@ async function v021EnhanceDuplicateGroups() {
   const ambiguous = [];
   for (let i = 0; i < recent.length; i++) {
     const a = recent[i];
-    const aTime = new Date(a.publishedAt || a.fetchedAt || 0).getTime();
     for (let j = i + 1; j < recent.length; j++) {
       const b = recent[j];
-      const bTime = new Date(b.publishedAt || b.fetchedAt || 0).getTime();
-      const timeDiff = Math.abs(aTime - bTime);
+      const timeDiff = Math.abs(a._v021Time - b._v021Time);
       if (timeDiff > V021_CONTENT_WINDOW_MS) break;
       if (find(i) === find(j)) continue;
 
-      const aUrl = canonicalArticleUrl(a.url || '');
-      const bUrl = canonicalArticleUrl(b.url || '');
-      if (aUrl && bUrl && aUrl === bUrl) {
+      if (a._v021Url && b._v021Url && a._v021Url === b._v021Url) {
         union(i, j);
         continue;
       }
 
       const titleScore = v021TitleSimilarity(a, b);
+      if (a.sourceId && a.sourceId === b.sourceId && titleScore < 0.55) continue;
+
       const descriptionScore = v021DescriptionSimilarity(a, b);
       if (v021StrongContentDuplicate(a, b, titleScore, descriptionScore)) {
         union(i, j);
         continue;
       }
       if (v021BodyCandidate(a, b, titleScore, descriptionScore, timeDiff)) {
-        ambiguous.push({ i, j, titleScore, descriptionScore });
+        v021PushBodyCandidate(ambiguous, { i, j, titleScore, descriptionScore });
       }
     }
   }
