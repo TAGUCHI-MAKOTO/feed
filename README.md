@@ -4,7 +4,7 @@
 
 ## Current Version
 
-**v0.1.31**
+**v0.1.32**
 
 ## 主な機能
 
@@ -26,6 +26,21 @@
 - WebサイトURLからRSS / Atomを自動探索
 - フィード表示名の自動取得・ダブルクリック変更
 - 同一フィードの二重登録抑止
+
+## v0.1.32: 高速更新 + 進捗メーター
+
+100件を超えるフィードでも更新待ち時間を短縮できるよう、更新処理を高速化しました。
+
+- 最大 **6フィードを並列取得**
+- フィード取得状態の `chrome.storage.local` 書込みを更新終了時の1回へ集約
+- 取得記事も全フィード分をまとめて IndexedDB へ保存
+- YouTubeの一時エラー再試行など、既存の取得ロジックは維持
+- 更新中は視覚的な進捗メーターを表示
+  - 0～100%のプログレスバー
+  - 成功 / 失敗 / 処理中件数
+  - 残り時間の目安
+  - 「記事保存中」「重複整理中」など処理フェーズを表示
+  - 完了時に総所要時間を表示
 
 ## 左カラム / カテゴリ
 
@@ -112,6 +127,6 @@ dashboard.html?view=source&source=<SOURCE_ID>&ctx=<TIMESTAMP>
 - `src/manifest.json` : Edge拡張機能設定
 - `src/service-worker.js` : 拡張機能アイコン押下時の画面起動
 - `src/dashboard.html` : MyFeed画面
-- `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` / `src/style-v015.css` / `src/style-v022.css` / `src/style-v031.css` : デザイン
-- `src/dashboard-1.js` ～ `src/dashboard-13.js` : フィード取得・表示・重複判定・カテゴリ・バックアップ・ヘルスチェック・YouTube対応・未読優先・Copilot向け実ページ遷移など
+- `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` / `src/style-v015.css` / `src/style-v022.css` / `src/style-v031.css` / `src/style-v032.css` : デザイン
+- `src/dashboard-1.js` ～ `src/dashboard-14.js` : フィード取得・表示・重複判定・カテゴリ・バックアップ・ヘルスチェック・YouTube対応・未読優先・Copilot向け実ページ遷移・並列更新・進捗メーターなど
 - `src/assets/myfeed-icon-source.svg` : 緑MFアイコンのデザインソース
