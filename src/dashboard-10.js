@@ -1,6 +1,14 @@
 // v0.1.22: feed health UI + no-repair registration
 // ------------------------------------------------
 
+if (!document.getElementById('v022HealthStyles')) {
+  const link = document.createElement('link');
+  link.id = 'v022HealthStyles';
+  link.rel = 'stylesheet';
+  link.href = 'style-v022.css';
+  document.head.appendChild(link);
+}
+
 function v022LooksLikeExplicitFeedUrl(value = '') {
   try {
     const url = new URL(value);
@@ -104,8 +112,7 @@ function v022DecorateSourceNavigation(sources) {
     const source = sources.find(item => item.id === row.dataset.sourceId);
     if (!source) return;
 
-    const old = row.querySelector('.source-health-warning');
-    old?.remove();
+    row.querySelector('.source-health-warning')?.remove();
     row.classList.toggle('has-feed-error', source.feedHealthStatus === 'error');
     if (source.feedHealthStatus !== 'error') return;
 
