@@ -4,11 +4,23 @@
 
 ## Current Version
 
-**v0.1.15**
+**v0.1.16**
 
 - WebサイトのRSS / Atom
 - Google Newsの検索キーワード
 - Xアカウント（Nitter RSS）
+- 登録画面を1入力欄へ簡略化
+  - `https://...` → WEB RSSとして判定
+  - `https://x.com/...` / `@account` → Xとして判定
+  - それ以外 → Google Newsキーワードとして判定
+- WebサイトURLを入力した場合はHTMLからRSS / Atomを自動探索
+- フィード表示名を自動取得
+  - WEB：RSSタイトルを優先、サイト名をフォールバック
+  - X：Nitter RSSの表示名、取得できない場合はアカウント名
+  - Google News：入力キーワード
+- 左カラムのフィード名をダブルクリックして表示名を変更可能
+  - 既に取得済みの記事の表示名も同時に更新
+- 同一フィードの二重登録を抑止
 - IndexedDBへのローカル保存
 - 72時間キャッシュ（お気に入りは保持）
 - カスタムカテゴリ / フィードのドラッグ移動 / フォルダ開閉
@@ -62,6 +74,6 @@
 - `src/service-worker.js` : 拡張機能アイコン押下時の画面起動
 - `src/dashboard.html` : MyFeed画面
 - `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` / `src/style-v015.css` : デザイン
-- `src/dashboard-1.js` ～ `src/dashboard-7.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・サイトアイコン取得などの処理
+- `src/dashboard-1.js` ～ `src/dashboard-7.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・サイトアイコン取得・自動判定登録などの処理
 
-> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.15では未実装です。
+> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.16では未実装です。
