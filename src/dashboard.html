@@ -4,7 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MyFeed</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style-base.css" />
+  <link rel="stylesheet" href="style-theme.css" />
+  <link rel="stylesheet" href="style-ui.css" />
+  <link rel="stylesheet" href="style-latest.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -240,12 +243,21 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <script src="dashboard-core.js"></script>
+  <script src="core-storage.js"></script>
+  <script src="feed-parser.js"></script>
+  <script src="dedupe.js"></script>
   <script src="dashboard-health.js"></script>
-  <script src="dashboard-render.js"></script>
-  <script src="dashboard-data.js"></script>
-  <script src="dashboard-events.js"></script>
-  <script src="dashboard-sources.js"></script>
-  <script src="dashboard-latest.js"></script>
+  <script src="source-icons.js"></script>
+  <script src="source-nav-render.js"></script>
+  <script src="article-render.js"></script>
+  <script src="image-enrichment.js"></script>
+  <script src="category-backup.js"></script>
+  <script src="app-events.js"></script>
+  <script src="source-input.js"></script>
+  <script src="source-discovery.js"></script>
+  <script src="health-reconcile.js"></script>
+  <script src="youtube-category-ui.js"></script>
+  <script src="youtube-validation.js"></script>
+  <script src="unread-copilot.js"></script>
 </body>
 </html>
