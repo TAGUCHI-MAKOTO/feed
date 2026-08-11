@@ -99,12 +99,22 @@ function v021ScheduleAutoAdvance(delay = 220) {
   }, delay);
 }
 
+// Wait for the actual read-state write when existing handlers use this helper.
+const v021BaseSetStoryReadState = setStoryReadState;
+setStoryReadState = async function(id, read) {
+  const result = await v021BaseSetStoryReadState(id, read);
+  if (read) v021ScheduleAutoAdvance(80);
+  return result;
+};
+
+// Covers dynamically inserted image links that write directly to IndexedDB.
 document.addEventListener('click', event => {
   if (event.target.closest('.read-btn, .article-link, .duplicate-link')) {
-    v021ScheduleAutoAdvance(320);
+    v021ScheduleAutoAdvance(420);
   }
 }, true);
 
+// Own the bulk-read behavior so it participates in the same flow.
 document.addEventListener('click', async event => {
   const button = event.target.closest('#markAllReadBtn');
   if (!button) return;
