@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="MyFeed MF icon source">
+  <defs>
+    <linearGradient id="g" x1="16" y1="12" x2="112" y2="116" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#34d399"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="30" fill="url(#g)"/>
+  <path d="M29 89V39h13l14 23 14-23h13v50H70V60L56 82 42 60v29H29Z" fill="#fff"/>
+  <path d="M88 89V39h31v11h-18v10h16v11h-16v18H88Z" fill="#fff"/>
+</svg>
