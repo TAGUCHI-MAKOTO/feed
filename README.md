@@ -4,7 +4,7 @@
 
 ## Current Version
 
-**v0.1.10**
+**v0.1.11**
 
 - WebサイトのRSS / Atom
 - Google Newsの検索キーワード
@@ -13,6 +13,8 @@
 - 72時間キャッシュ（お気に入りは保持）
 - カスタムカテゴリ / ドラッグ移動 / フォルダ開閉
 - 未読件数表示
+- 左カラム上部の「すべて / 未読 / お気に入り」を固定
+- お気に入りを既存カテゴリ（フォルダ）ごとに絞り込み表示
 - 重複記事のローカル類似判定と自動整理
 - 画像付きカード / コンパクト表示
 - ライト / ダーク / ブラウザ追従テーマ
@@ -31,7 +33,7 @@
 - `src/manifest.json` : Edge拡張機能設定
 - `src/service-worker.js` : 拡張機能アイコン押下時の画面起動
 - `src/dashboard.html` : MyFeed画面
-- `src/style-base.css` / `src/style-features.css` : デザイン
-- `src/dashboard-1.js` ～ `src/dashboard-4.js` : フィード取得・表示・重複判定などの処理
+- `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` : デザイン
+- `src/dashboard-1.js` ～ `src/dashboard-5.js` : フィード取得・表示・重複判定・お気に入りカテゴリ表示などの処理
 
-> アイコンは検討中のため、v0.1.10では未実装です。
+> アイコンは検討中のため、v0.1.11では未実装です。
