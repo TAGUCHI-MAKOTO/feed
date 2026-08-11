@@ -230,3 +230,115 @@
     animation: none !important;
   }
 }
+
+
+/* v0.2.2: fixed registration area + registered-feed search */
+#sourcesDialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#sourcesDialog #sourceForm {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  background: var(--panel);
+  box-shadow: 0 10px 24px color-mix(in srgb, #101828 9%, transparent);
+}
+
+#sourcesDialog .source-manager {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.source-register-bottom-row {
+  display: grid;
+  grid-template-columns: minmax(220px, .9fr) minmax(300px, 1.4fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.source-register-bottom-row .source-category-select {
+  max-width: none;
+}
+
+.source-manager-search-label {
+  display: grid;
+  gap: 6px;
+}
+
+.source-manager-search-label > span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.source-manager-search-box {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field-bg, var(--panel));
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+
+.source-manager-search-box:focus-within {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.source-manager-search-icon {
+  flex: 0 0 auto;
+  font-size: 15px;
+  opacity: .78;
+}
+
+.source-manager-search-box input {
+  min-width: 0;
+  width: 100%;
+  border: 0 !important;
+  outline: 0 !important;
+  padding: 9px 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.source-manager-search-clear {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.source-manager-search-clear:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.source-manager-no-results {
+  padding: 26px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .source-register-bottom-row {
+    grid-template-columns: 1fr;
+  }
+}
