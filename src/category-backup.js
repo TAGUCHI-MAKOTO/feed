@@ -5,13 +5,104 @@ function renderCategoryOptions(categories, selected = '') {
   elements.sourceCategory.innerHTML = options.join('');
 }
 
+function normalizeSourceManagerSearch(value = '') {
+  return String(value || '')
+    .normalize('NFKC')
+    .toLowerCase()
+    .trim();
+}
+
+function ensureSourceManagerSearchUi() {
+  let search = document.getElementById('sourceManagerSearch');
+  if (search) return search;
+
+  const categoryLabel = elements.sourceCategory?.closest('label');
+  if (!categoryLabel) return null;
+
+  const row = document.createElement('div');
+  row.className = 'source-register-bottom-row wide';
+  categoryLabel.parentElement.insertBefore(row, categoryLabel);
+  row.appendChild(categoryLabel);
+  categoryLabel.classList.remove('wide');
+
+  const searchLabel = document.createElement('label');
+  searchLabel.className = 'source-manager-search-label';
+  searchLabel.innerHTML = `
+    <span>登録済みフィードを検索</span>
+    <div class="source-manager-search-box">
+      <span class="source-manager-search-icon" aria-hidden="true">🔍</span>
+      <input id="sourceManagerSearch" type="search" autocomplete="off"
+             placeholder="名前 / URL / @アカウント / カテゴリ" />
+      <button id="sourceManagerSearchClear" class="source-manager-search-clear" type="button"
+              aria-label="検索をクリア" title="検索をクリア" hidden>×</button>
+    </div>
+    <small>削除したいフィードをすぐ絞り込めます。</small>`;
+  row.appendChild(searchLabel);
+
+  search = searchLabel.querySelector('#sourceManagerSearch');
+  const clearButton = searchLabel.querySelector('#sourceManagerSearchClear');
+
+  search.addEventListener('input', () => renderSources());
+  search.addEventListener('keydown', event => {
+    if (event.key === 'Enter') event.preventDefault();
+  });
+  clearButton.addEventListener('click', () => {
+    search.value = '';
+    search.focus();
+    renderSources();
+  });
+
+  elements.sourcesDialog?.addEventListener('close', () => {
+    search.value = '';
+    clearButton.hidden = true;
+  });
+
+  return search;
+}
+
+function sourceMatchesManagerSearch(source, categoryName, query) {
+  const normalizedQuery = normalizeSourceManagerSearch(query);
+  if (!normalizedQuery) return true;
+  const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  const handle = source.type === 'x' ? normalizeXHandle(source.value || '') : '';
+  const haystack = normalizeSourceManagerSearch([
+    source.name,
+    source.value,
+    source.type,
+    typeLabel(source.type),
+    categoryName,
+    handle,
+    handle ? `@${handle}` : ''
+  ].filter(Boolean).join(' '));
+  return tokens.every(token => haystack.includes(token));
+}
+
 async function renderSources() {
+  const searchInput = ensureSourceManagerSearchUi();
+  const clearButton = document.getElementById('sourceManagerSearchClear');
   const { sources, categories } = await getState();
   renderCategoryOptions(categories, elements.sourceCategory.value || '');
   const categoryMap = new Map(categories.map(category => [category.id, category.name]));
-  elements.sourceCount.textContent = `${sources.length}件`;
-  if (!sources.length) { elements.sourceList.innerHTML = '<small>まだ登録されていません。</small>'; return; }
-  elements.sourceList.innerHTML = orderedSources(sources).map(source => {
+  const searchTerm = searchInput?.value || '';
+  const filteredSources = orderedSources(sources).filter(source =>
+    sourceMatchesManagerSearch(source, categoryMap.get(categoryKey(source)) || '未分類', searchTerm)
+  );
+
+  if (clearButton) clearButton.hidden = !normalizeSourceManagerSearch(searchTerm);
+  elements.sourceCount.textContent = normalizeSourceManagerSearch(searchTerm)
+    ? `${filteredSources.length} / ${sources.length}件`
+    : `${sources.length}件`;
+
+  if (!sources.length) {
+    elements.sourceList.innerHTML = '<small>まだ登録されていません。</small>';
+    return;
+  }
+  if (!filteredSources.length) {
+    elements.sourceList.innerHTML = '<div class="source-manager-no-results">該当するフィードはありません。</div>';
+    return;
+  }
+
+  elements.sourceList.innerHTML = filteredSources.map(source => {
     const healthError = source.feedHealthStatus === 'error';
     const healthTitle = feedHealthErrorTitle(source);
     return `<div class="source-row ${healthError ? 'has-feed-error' : ''}" data-id="${source.id}">
