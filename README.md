@@ -4,7 +4,7 @@
 
 ## Current Version
 
-**v0.1.14**
+**v0.1.15**
 
 - WebサイトのRSS / Atom
 - Google Newsの検索キーワード
@@ -18,11 +18,15 @@
 - 左カラム幅を230～460pxの範囲でドラッグ調整
   - 幅は自動保存
   - 境界をダブルクリックすると標準幅へ戻す
-- フィードごとのfavicon表示
-  - Web RSS：取得記事またはRSS URLのサイトfavicon
+- フィードごとのアイコン表示
+  - Web RSS：RSSから配信元サイトURLを取得し、WebサイトHTMLの `<link rel="icon">` / `apple-touch-icon` 等を解析して直接取得
+  - HTMLにアイコン指定が無い場合のみ `/favicon.ico` をフォールバック利用
   - Google News：Google News favicon
   - X：X favicon
   - 取得失敗時は従来の種類アイコンへ自動フォールバック
+  - 取得結果はフィード設定にキャッシュ
+- 空フォルダの「ここへドラッグできます」表示を削除
+- 記事検索の🔍アイコン・文字サイズを拡大
 - 全体の文字・ボタン・記事カードを少し大きくして視認性を改善
 - 未読件数表示
 - 左カラム上部の「すべて / 未読 / お気に入り」を固定
@@ -57,7 +61,7 @@
 - `src/manifest.json` : Edge拡張機能設定
 - `src/service-worker.js` : 拡張機能アイコン押下時の画面起動
 - `src/dashboard.html` : MyFeed画面
-- `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` : デザイン
-- `src/dashboard-1.js` ～ `src/dashboard-6.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・favicon表示などの処理
+- `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` / `src/style-v015.css` : デザイン
+- `src/dashboard-1.js` ～ `src/dashboard-7.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・サイトアイコン取得などの処理
 
-> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.14では未実装です。
+> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.15では未実装です。
