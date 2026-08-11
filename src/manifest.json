@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.1.22",
-  "description": "フィード読込エラーを左カラムで可視化するローカルフィードリーダー（RSS/Atom/RDF・自動判定・カテゴリ・重複整理・バックアップ対応）",
+  "version": "0.1.23",
+  "description": "フィード取得成功後に古いエラー印を確実に解除するローカルフィードリーダー（RSS/Atom/RDF・ヘルスチェック・カテゴリ・重複整理対応）",
   "permissions": [
     "storage",
     "tabs"
