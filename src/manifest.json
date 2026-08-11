@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.1.27",
-  "description": "4Kでも見やすい従来フォルダアイコンと未分類最上部固定に対応したローカルフィードリーダー（YouTube・RSS/Atom/RDF・ヘルスチェック対応）",
+  "version": "0.1.31",
+  "description": "未読優先ソート・YouTube検証・Copilot向け実ページ遷移に対応したローカルフィードリーダー",
   "permissions": [
     "storage",
     "tabs"
