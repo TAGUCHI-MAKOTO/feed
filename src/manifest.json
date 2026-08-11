@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "MyFeed",
+  "version": "0.2.0",
+  "description": "最新版コードだけに整理したMyFeedクリーン版（6並列更新・進捗メーター・未読優先・YouTube・Copilotページ分離対応）",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "MyFeedを開く"
+  }
+}
