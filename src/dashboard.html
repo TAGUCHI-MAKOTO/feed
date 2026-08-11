@@ -184,6 +184,21 @@
         <div id="categoryManagerList" class="category-manager-list"></div>
       </section>
 
+      <section class="transfer-settings">
+        <div class="setting-section-head">
+          <div>
+            <strong>インポート・エクスポート</strong>
+            <small>登録フィード、フォルダ構成、設定、⭐お気に入り記事をJSONでバックアップできます。</small>
+          </div>
+        </div>
+        <div class="transfer-actions">
+          <button id="exportDataBtn" type="button" class="secondary-btn">⇩ エクスポート</button>
+          <button id="importDataBtn" type="button" class="ghost-btn">⇧ インポート</button>
+          <input id="importDataInput" type="file" accept="application/json,.json" hidden />
+        </div>
+        <small class="transfer-note">インポートすると現在のフィード構成・設定を置き換え、通常記事キャッシュをクリアします。バックアップ内のお気に入り記事は復元します。</small>
+      </section>
+
       <div class="danger-zone">
         <div>
           <strong>記事キャッシュ</strong>
@@ -210,6 +225,7 @@
   <script src="dashboard-8.js"></script>
   <script src="dashboard-9.js"></script>
   <script src="dashboard-10.js"></script>
+  <script src="dashboard-11.js"></script>
   <script src="dashboard-4.js"></script>
 </body>
 </html>
