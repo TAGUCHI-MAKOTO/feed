@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.1.24",
-  "description": "YouTubeチャンネルURL登録と独立したカテゴリ管理に対応したローカルフィードリーダー（RSS/Atom/RDF・ヘルスチェック・重複整理対応）",
+  "version": "0.1.27",
+  "description": "4Kでも見やすい従来フォルダアイコンと未分類最上部固定に対応したローカルフィードリーダー（YouTube・RSS/Atom/RDF・ヘルスチェック対応）",
   "permissions": [
     "storage",
     "tabs"
