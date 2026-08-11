@@ -187,3 +187,45 @@ setTimeout(v024UpdateDetectionHint, 0);
     dialog.close();
   });
 })();
+
+// Convert already-registered YouTube channel-page URLs once as well.
+async function v024MigrateExistingYouTubeSources() {
+  try {
+    const { sources } = await getState();
+    let changed = false;
+    const nextSources = [];
+
+    for (const source of sources) {
+      if (source.type !== 'rss' || !v024IsYouTubeChannelUrl(source.value)) {
+        nextSources.push(source);
+        continue;
+      }
+
+      try {
+        const converted = await v024PrepareYouTubeSource(source.value, source.categoryId || '');
+        nextSources.push({
+          ...source,
+          ...converted,
+          id: source.id,
+          name: source.name || converted.name,
+          order: source.order,
+          categoryId: source.categoryId || ''
+        });
+        changed = true;
+      } catch (error) {
+        console.debug('既存YouTubeフィードの変換をスキップ:', source.name, error);
+        nextSources.push(source);
+      }
+    }
+
+    if (changed) {
+      await saveSources(nextSources);
+      await render();
+      if (elements.sourcesDialog?.open) await renderSources();
+    }
+  } catch (error) {
+    console.debug('YouTubeフィード移行をスキップ:', error);
+  }
+}
+
+v024MigrateExistingYouTubeSources();
