@@ -4,23 +4,35 @@
 
 ## Current Version
 
-**v0.1.23**
+**v0.1.24**
 
 - WebサイトのRSS / Atom / RSS 1.0 RDF
 - Google Newsの検索キーワード
 - Xアカウント（Nitter RSS）
+- **YouTubeチャンネルURLの登録に対応**
+  - `https://www.youtube.com/@handle` を貼るだけでチャンネルIDを自動取得
+  - `/channel/UC...` / `/user/...` / `/c/...` 形式にも対応
+  - YouTube公式Atom `https://www.youtube.com/feeds/videos.xml?channel_id=...` へ自動変換して登録
+  - 登録時の自動判定表示は「YouTube チャンネル」
 - 登録画面を1入力欄へ簡略化
   - `https://...` → WEB RSSとして判定
+  - YouTubeチャンネルURL → YouTubeとして自動判定
   - `https://x.com/...` / `@account` → Xとして判定
   - それ以外 → Google Newsキーワードとして判定
 - WebサイトURLを入力した場合はHTMLからRSS / Atomを自動探索
 - フィード表示名を自動取得
   - WEB：RSSタイトルを優先、サイト名をフォールバック
+  - YouTube：Atomフィードのチャンネル名を使用
   - X：Nitter RSSの表示名、取得できない場合はアカウント名
   - Google News：入力キーワード
 - 左カラムのフィード名をダブルクリックして表示名を変更可能
   - 既に取得済みの記事の表示名も同時に更新
 - 同一フィードの二重登録を抑止
+- **左下3ボタンの役割を分離**
+  - 「フィードを登録」：フィード登録・登録済みフィード管理
+  - 「カテゴリを管理」：カテゴリ専用ダイアログ
+  - 「設定」：自動更新・テーマ・バックアップ・キャッシュ設定
+  - カテゴリ管理UIは設定画面から専用ダイアログへ移動
 - **フィードの自動修復 / URL自動書き換えは廃止**
 - フィード取得状態のヘルスチェック
   - 取得失敗時は左カラムのフィード横に赤い `!` を表示
@@ -68,6 +80,6 @@
 - `src/service-worker.js` : 拡張機能アイコン押下時の画面起動
 - `src/dashboard.html` : MyFeed画面
 - `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` / `src/style-v015.css` / `src/style-v022.css` : デザイン
-- `src/dashboard-1.js` ～ `src/dashboard-10.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・サイトアイコン取得・自動判定登録・RSS 1.0 RDF・フィードヘルスチェックなどの処理
+- `src/dashboard-1.js` ～ `src/dashboard-11.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・サイトアイコン取得・自動判定登録・RSS 1.0 RDF・フィードヘルスチェック・YouTubeチャンネル変換・カテゴリ管理分離などの処理
 
-> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.23では未実装です。
+> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.24では未実装です。
