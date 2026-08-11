@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.1.20",
-  "description": "旧RSSの探索候補を強化し、登録時・初回取得失敗時に自動修復するローカルフィードリーダー（RSS/Atom/RDF・URL自動更新・カテゴリ・重複整理対応）",
+  "version": "0.1.21",
+  "description": "登録時・登録後の旧RSS自動修復を強化したローカルフィードリーダー（RSS/Atom/RDF・URL自動更新・カテゴリ・重複整理・バックアップ対応）",
   "permissions": [
     "storage",
     "tabs"
