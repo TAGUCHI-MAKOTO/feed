@@ -234,12 +234,15 @@ async function tryRepairRegisteredFeed(source) {
 
 function shouldAttemptFeedRepair(source, error, failCount) {
   if (!source || source.type !== 'rss') return false;
-  const status = feedErrorStatus(error);
-  if ([404, 410].includes(status)) return true;
-  if (failCount < FEED_AUTO_REPAIR_FAILURE_THRESHOLD) return false;
 
   const lastAttempt = new Date(source.feedLastRepairAttemptAt || 0).getTime();
-  return !Number.isFinite(lastAttempt) || Date.now() - lastAttempt >= FEED_AUTO_REPAIR_RETRY_MS;
+  if (Number.isFinite(lastAttempt) && lastAttempt > 0 && Date.now() - lastAttempt < FEED_AUTO_REPAIR_RETRY_MS) {
+    return false;
+  }
+
+  const status = feedErrorStatus(error);
+  if ([404, 410].includes(status)) return true;
+  return failCount >= FEED_AUTO_REPAIR_FAILURE_THRESHOLD;
 }
 
 refreshAll = async function() {
