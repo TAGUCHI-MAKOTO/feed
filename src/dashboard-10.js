@@ -1,6 +1,6 @@
-// v0.1.20: stronger feed discovery + repair from first failure
+// v0.1.21: stronger feed discovery + repair from first failure
 // --------------------------------------------------------------
-const FEED_REPAIR_ENGINE_VERSION = 2;
+const FEED_REPAIR_ENGINE_VERSION = 3;
 
 const v020RepairMigrationPromise = (async () => {
   const state = await chrome.storage.local.get({
