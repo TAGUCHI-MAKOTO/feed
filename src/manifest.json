@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed Prototype",
-  "version": "0.1.11",
-  "description": "RSS / Google News / Nitter RSS を画像付きでまとめて読むローカルフィードリーダー（72時間キャッシュ・左ナビ固定・お気に入りカテゴリ表示・重複整理・テーマ対応）",
+  "version": "0.1.12",
+  "description": "RSS / Google News / Nitter RSS を画像付きでまとめて読むローカルフィードリーダー（72時間キャッシュ・フォルダ並び替え・JSONバックアップ・重複整理・テーマ対応）",
   "permissions": [
     "storage",
     "tabs"
