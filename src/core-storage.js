@@ -11,7 +11,7 @@ const DEDUPE_SIMILARITY = 0.76;
 const CACHE_RETENTION_MS = 72 * 60 * 60 * 1000;
 const BACKUP_FORMAT = 'myfeed-backup';
 const BACKUP_VERSION = 1;
-const APP_VERSION = '0.2.0';
+const APP_VERSION = '0.2.1';
 
 function v031StartupViewFromUrl() {
   try {
@@ -384,4 +384,3 @@ function sourceUrl(source) {
   }
   throw new Error('不明なフィード種別です');
 }
-
