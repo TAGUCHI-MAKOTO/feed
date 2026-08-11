@@ -4,9 +4,11 @@
 
 ## Current Version
 
-**v0.1.16**
+**v0.1.17**
 
-- WebサイトのRSS / Atom
+- WebサイトのRSS / Atom / RSS 1.0 RDF
+- `http://` の古いRSS取得失敗時に `https://` を自動再試行
+- 古いRSS URLが取得できない場合は、同一サイトのトップページから現行RSS / Atomを再探索
 - Google Newsの検索キーワード
 - Xアカウント（Nitter RSS）
 - 登録画面を1入力欄へ簡略化
@@ -74,6 +76,6 @@
 - `src/service-worker.js` : 拡張機能アイコン押下時の画面起動
 - `src/dashboard.html` : MyFeed画面
 - `src/style-base.css` / `src/style-features.css` / `src/style-v011.css` / `src/style-v015.css` : デザイン
-- `src/dashboard-1.js` ～ `src/dashboard-7.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・サイトアイコン取得・自動判定登録などの処理
+- `src/dashboard-1.js` ～ `src/dashboard-8.js` : フィード取得・表示・重複判定・お気に入りカテゴリ・バックアップ・フォルダD&D・可変サイドバー・サイトアイコン取得・自動判定登録・RSS 1.0 RDF対応などの処理
 
-> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.16では未実装です。
+> MyFeed本体の拡張機能アイコンは検討中のため、v0.1.17では未実装です。
