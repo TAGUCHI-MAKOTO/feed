@@ -137,6 +137,9 @@ async function normalizeItems(items, source) {
     const title = stripHtml(item.title || '(無題)');
     const url = item.url || '';
     const basis = item.guid || url || `${source.id}|${title}|${item.publishedAt}`;
+    const imageUrl = source.type === 'google'
+      ? ''
+      : resolveHttpUrl(item.imageUrl || '', url || sourceUrl(source));
     result.push({
       id: await hashText(basis),
       sourceId: source.id,
@@ -144,7 +147,7 @@ async function normalizeItems(items, source) {
       sourceType: source.type,
       title,
       description: stripHtml(item.description || '').slice(0, 500),
-      imageUrl: resolveHttpUrl(item.imageUrl || '', url || sourceUrl(source)),
+      imageUrl,
       imageCheckedAt: '',
       url,
       publishedAt: normalizeDate(item.publishedAt),
