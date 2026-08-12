@@ -61,9 +61,29 @@ function attachArticleEvents() {
   });
 }
 
+function isGoogleNewsImageUrl(value = '') {
+  const url = resolveHttpUrl(value);
+  if (!url) return false;
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host === 'news.google.com'
+      || host === 'google.com'
+      || host.endsWith('.google.com')
+      || host === 'googleusercontent.com'
+      || host.endsWith('.googleusercontent.com')
+      || host === 'gstatic.com'
+      || host.endsWith('.gstatic.com');
+  } catch {
+    return false;
+  }
+}
+
 function shouldEnrichImage(article) {
-  if (!article || article.imageUrl || !article.url) return false;
+  if (!article || !article.url) return false;
+  const googlePlaceholder = article.sourceType === 'google' && isGoogleNewsImageUrl(article.imageUrl);
+  if (article.imageUrl && !googlePlaceholder) return false;
   if (!resolveHttpUrl(article.url)) return false;
+  if (googlePlaceholder) return true;
   if (!article.imageCheckedAt) return true;
   const checkedAt = new Date(article.imageCheckedAt).getTime();
   return Number.isNaN(checkedAt) || Date.now() - checkedAt > IMAGE_RETRY_MS;
@@ -115,6 +135,12 @@ function looksLikeDecorativeImage(url, image) {
 
 function extractImageFromPage(html, baseUrl) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
+  let hostname = '';
+  try { hostname = new URL(baseUrl).hostname.toLowerCase(); } catch { /* noop */ }
+
+  // Google News自身のOG画像・ロゴは記事サムネとして使わず、配信元の記事へ進む。
+  if (hostname === 'news.google.com') return { imageUrl: '', doc };
+
   const metaSelectors = [
     'meta[property="og:image:secure_url"]',
     'meta[property="og:image"]',
@@ -130,10 +156,6 @@ function extractImageFromPage(html, baseUrl) {
     const resolved = resolveHttpUrl(raw, baseUrl);
     if (resolved) return { imageUrl: resolved, doc };
   }
-
-  let hostname = '';
-  try { hostname = new URL(baseUrl).hostname; } catch { /* noop */ }
-  if (hostname === 'news.google.com') return { imageUrl: '', doc };
 
   const imageCandidates = [
     ...Array.from(doc.querySelectorAll('article img')),
@@ -183,7 +205,9 @@ async function fetchPreviewImage(article) {
   if (!first) return '';
 
   const firstResult = extractImageFromPage(first.html, first.finalUrl);
-  if (firstResult.imageUrl) return firstResult.imageUrl;
+  if (firstResult.imageUrl && !(article.sourceType === 'google' && isGoogleNewsImageUrl(firstResult.imageUrl))) {
+    return firstResult.imageUrl;
+  }
 
   if (article.sourceType === 'google' || (() => {
     try { return new URL(first.finalUrl).hostname === 'news.google.com'; } catch { return false; }
@@ -192,7 +216,10 @@ async function fetchPreviewImage(article) {
     if (externalUrl) {
       try {
         const second = await fetchHtmlPage(externalUrl);
-        if (second) return extractImageFromPage(second.html, second.finalUrl).imageUrl;
+        if (second) {
+          const secondResult = extractImageFromPage(second.html, second.finalUrl).imageUrl;
+          if (secondResult && !isGoogleNewsImageUrl(secondResult)) return secondResult;
+        }
       } catch (error) {
         console.debug('Google News image fallback failed', error);
       }
@@ -206,7 +233,19 @@ function insertImageIntoCard(article, imageUrl) {
   const card = document.querySelector(`.article-card[data-id="${CSS.escape(article.id)}"]`);
   if (!card) return;
   const content = card.querySelector('.article-content');
-  if (!content || content.querySelector('.article-thumb')) return;
+  if (!content) return;
+
+  const existingThumb = content.querySelector('.article-thumb');
+  if (existingThumb) {
+    const existingImage = existingThumb.querySelector('img');
+    if (existingImage) {
+      existingThumb.href = article.url || imageUrl;
+      existingImage.src = imageUrl;
+      content.classList.add('has-image');
+      return;
+    }
+    existingThumb.remove();
+  }
 
   const thumb = document.createElement('a');
   thumb.className = 'article-thumb article-link';
@@ -234,6 +273,15 @@ function insertImageIntoCard(article, imageUrl) {
   content.classList.add('has-image');
 }
 
+function removeImageFromCard(articleId) {
+  const card = document.querySelector(`.article-card[data-id="${CSS.escape(articleId)}"]`);
+  if (!card) return;
+  const content = card.querySelector('.article-content');
+  const thumb = content?.querySelector('.article-thumb');
+  if (thumb) thumb.remove();
+  if (content) content.classList.remove('has-image');
+}
+
 function enqueueImageEnrichment(article) {
   if (!shouldEnrichImage(article) || imageEnrichQueued.has(article.id)) return;
   imageEnrichQueued.add(article.id);
@@ -257,11 +305,10 @@ function pumpImageEnrichmentQueue() {
       const checkedAt = new Date().toISOString();
       await dbPatchArticle(article.id, { imageUrl: imageUrl || '', imageCheckedAt: checkedAt });
 
-      if (imageUrl) {
-        const updated = { ...article, imageUrl, imageCheckedAt: checkedAt };
-        renderedArticleMap.set(article.id, updated);
-        insertImageIntoCard(updated, imageUrl);
-      }
+      const updated = { ...article, imageUrl: imageUrl || '', imageCheckedAt: checkedAt };
+      renderedArticleMap.set(article.id, updated);
+      if (imageUrl) insertImageIntoCard(updated, imageUrl);
+      else removeImageFromCard(article.id);
     })().finally(() => {
       imageEnrichActive--;
       imageEnrichQueued.delete(article.id);
