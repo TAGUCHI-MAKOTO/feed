@@ -21,13 +21,12 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import json
           import shutil
-          import struct
-          import zlib
 
           src = Path('src')
           out = Path('compact')
+          if out.exists():
+              shutil.rmtree(out)
           out.mkdir(exist_ok=True)
 
           js_order = [
@@ -83,111 +82,8 @@ jobs:
           html = html.replace(old_js, '  <script src="dashboard.js"></script>\n')
           (out / 'dashboard.html').write_text(html, encoding='utf-8')
 
+          shutil.copy2(src / 'manifest.json', out / 'manifest.json')
           shutil.copy2(src / 'service-worker.js', out / 'service-worker.js')
-
-          # Generate raster PNG icons in the ZIP root.
-          # Root-level, versioned filenames make replacement installs less prone to stale icon metadata/cache.
-          GLYPHS = {
-              'M': [
-                  '10001',
-                  '11011',
-                  '10101',
-                  '10101',
-                  '10001',
-                  '10001',
-                  '10001',
-              ],
-              'F': [
-                  '11111',
-                  '10000',
-                  '10000',
-                  '11110',
-                  '10000',
-                  '10000',
-                  '10000',
-              ],
-          }
-
-          def png_chunk(kind, data):
-              return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
-
-          def write_png(path, size):
-              px = bytearray(size * size * 4)
-
-              def put(x, y, rgba):
-                  if not (0 <= x < size and 0 <= y < size):
-                      return
-                  i = (y * size + x) * 4
-                  px[i:i+4] = bytes(rgba)
-
-              cx = cy = (size - 1) / 2
-              radius = size * 0.46
-              ring_radius = size * 0.49
-              green = (53, 196, 106, 255)
-              dark = (29, 43, 54, 255)
-              white = (255, 255, 255, 255)
-
-              for y in range(size):
-                  for x in range(size):
-                      dx = x - cx
-                      dy = y - cy
-                      d2 = dx * dx + dy * dy
-                      if d2 <= ring_radius * ring_radius:
-                          put(x, y, dark)
-                      if d2 <= radius * radius:
-                          put(x, y, green)
-
-              text = 'M' if size <= 16 else 'MF'
-              gap_units = 1 if len(text) > 1 else 0
-              total_units = 5 * len(text) + gap_units
-              scale = max(1, int(min(size * 0.62 / total_units, size * 0.58 / 7)))
-              text_w = total_units * scale
-              text_h = 7 * scale
-              ox = (size - text_w) // 2
-              oy = (size - text_h) // 2
-
-              cursor = ox
-              for ch in text:
-                  glyph = GLYPHS[ch]
-                  for gy, row in enumerate(glyph):
-                      for gx, bit in enumerate(row):
-                          if bit != '1':
-                              continue
-                          for yy in range(scale):
-                              for xx in range(scale):
-                                  put(cursor + gx * scale + xx, oy + gy * scale + yy, white)
-                  cursor += 6 * scale
-
-              raw = bytearray()
-              stride = size * 4
-              for y in range(size):
-                  raw.append(0)
-                  start = y * stride
-                  raw.extend(px[start:start + stride])
-
-              data = b'\x89PNG\r\n\x1a\n'
-              data += png_chunk(b'IHDR', struct.pack('>IIBBBBB', size, size, 8, 6, 0, 0, 0))
-              data += png_chunk(b'IDAT', zlib.compress(bytes(raw), 9))
-              data += png_chunk(b'IEND', b'')
-              path.write_bytes(data)
-
-          icon_sizes = [16, 32, 48, 128]
-          icon_files = {size: f'myfeed-icon-v023-{size}.png' for size in icon_sizes}
-          for size, filename in icon_files.items():
-              write_png(out / filename, size)
-
-          manifest = json.loads((src / 'manifest.json').read_text(encoding='utf-8'))
-          manifest['version'] = '0.2.3'
-          icon_map = {str(size): icon_files[size] for size in icon_sizes}
-          manifest['icons'] = icon_map
-          action = dict(manifest.get('action') or {})
-          action['default_title'] = action.get('default_title') or 'MyFeedを開く'
-          action['default_icon'] = icon_map
-          manifest['action'] = action
-          (out / 'manifest.json').write_text(
-              json.dumps(manifest, ensure_ascii=False, indent=2) + '\n',
-              encoding='utf-8'
-          )
 
           (out / 'README.txt').write_text(
               'MyFeed compact build\n'
@@ -195,29 +91,17 @@ jobs:
               'Edge: edge://extensions/ → 開発者モード → 「展開して読み込み」→ このフォルダを指定してください。\n\n'
               'この配布版では、開発用に分割されている JavaScript を dashboard.js、CSS を style.css にまとめています。\n'
               '機能は src の分割版と同じです。\n\n'
-              'Edge用の緑色MFアイコン（16/32/48/128px）はZIP直下に同梱しています。\n'
-              'アイコン更新版ではmanifest versionを0.2.3へ上げ、アイコンファイル名も変更しています。\n',
+              '拡張機能用のPNGアイコンは同梱していません。画面左上のMyFeedブランド表示（MF）はそのまま残しています。\n',
               encoding='utf-8'
           )
 
           expected = {
-              'dashboard.html', 'dashboard.js', 'style.css', 'manifest.json',
-              'service-worker.js', 'README.txt', *icon_files.values()
+              'dashboard.html', 'dashboard.js', 'style.css',
+              'manifest.json', 'service-worker.js', 'README.txt'
           }
           actual = {p.name for p in out.iterdir() if p.is_file()}
           if actual != expected:
               raise SystemExit(f'Unexpected compact files: {sorted(actual)}')
-
-          built_manifest = json.loads((out / 'manifest.json').read_text(encoding='utf-8'))
-          if built_manifest.get('version') != '0.2.3':
-              raise SystemExit('manifest version validation failed')
-          if built_manifest.get('icons') != icon_map:
-              raise SystemExit('manifest icons validation failed')
-          if built_manifest.get('action', {}).get('default_icon') != icon_map:
-              raise SystemExit('manifest action icon validation failed')
-          for filename in icon_files.values():
-              if not (out / filename).is_file() or (out / filename).stat().st_size < 100:
-                  raise SystemExit(f'icon validation failed: {filename}')
 
           dashboard_js = (out / 'dashboard.js').read_text(encoding='utf-8')
           required_modules = ['source-input.js', 'google-news-thumbnail-fix.js', 'dedupe-latest.js']
