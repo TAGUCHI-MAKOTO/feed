@@ -31,6 +31,7 @@ jobs:
               'core-storage.js',
               'feed-parser.js',
               'dedupe.js',
+              'dedupe-latest.js',
               'dashboard-health.js',
               'source-icons.js',
               'source-nav-render.js',
@@ -98,7 +99,8 @@ jobs:
               raise SystemExit(f'Unexpected compact files: {sorted(actual)}')
 
           dashboard_js = (out / 'dashboard.js').read_text(encoding='utf-8')
-          if 'source-input.js' not in dashboard_js or 'google-news-thumbnail-fix.js' not in dashboard_js:
+          required_modules = ['source-input.js', 'google-news-thumbnail-fix.js', 'dedupe-latest.js']
+          if not all(name in dashboard_js for name in required_modules):
               raise SystemExit('dashboard.js bundle validation failed')
           if 'style-latest.css' not in (out / 'style.css').read_text(encoding='utf-8'):
               raise SystemExit('style.css bundle validation failed')
