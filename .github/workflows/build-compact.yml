@@ -36,6 +36,7 @@ jobs:
               'source-nav-render.js',
               'article-render.js',
               'image-enrichment.js',
+              'google-news-thumbnail-fix.js',
               'dedupe-content.js',
               'category-backup.js',
               'app-events.js',
@@ -96,7 +97,8 @@ jobs:
           if actual != expected:
               raise SystemExit(f'Unexpected compact files: {sorted(actual)}')
 
-          if 'source-input.js' not in (out / 'dashboard.js').read_text(encoding='utf-8'):
+          dashboard_js = (out / 'dashboard.js').read_text(encoding='utf-8')
+          if 'source-input.js' not in dashboard_js or 'google-news-thumbnail-fix.js' not in dashboard_js:
               raise SystemExit('dashboard.js bundle validation failed')
           if 'style-latest.css' not in (out / 'style.css').read_text(encoding='utf-8'):
               raise SystemExit('style.css bundle validation failed')
