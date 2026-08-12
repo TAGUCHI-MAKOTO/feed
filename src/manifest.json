@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "description": "登録フィード検索と固定登録パネルを追加したMyFeed（自動送り・本文対応重複判定・6並列更新・Copilotページ分離対応）",
   "permissions": [
     "storage",
