@@ -44,6 +44,22 @@ sourceUrl = function(source) {
   return `https://news.google.com/rss/search?q=${q}&hl=ja&gl=JP&ceid=JP:ja`;
 };
 
+// google-news-thumbnail-fix.js also opens the Google News search page to match thumbnails.
+// Keep that page on the same locale as the RSS source so English keywords do not search
+// the Japanese results page for images.
+if (typeof googleNewsSearchPageUrl === 'function') {
+  googleNewsSearchPageUrl = function(source) {
+    const query = String(source?.value || '').trim();
+    if (!query) return '';
+    const q = encodeURIComponent(query);
+    const locale = v025GoogleNewsLocaleForSource(source);
+    if (locale === 'us') {
+      return `https://news.google.com/search?q=${q}&hl=en-US&gl=US&ceid=US:en`;
+    }
+    return `https://news.google.com/search?q=${q}&hl=ja&gl=JP&ceid=JP:ja`;
+  };
+}
+
 const v025BasePrepareAutoSource = prepareAutoSource;
 prepareAutoSource = async function(rawValue, categoryId = '') {
   const detected = detectSourceInput(rawValue);
