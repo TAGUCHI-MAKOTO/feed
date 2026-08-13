@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.2.5",
-  "description": "Google Newsキーワードを日本語=国内・英字=海外英語へ自動切替するMyFeed（登録検索・自動送り・本文重複判定・6並列更新対応）",
+  "version": "0.2.6",
+  "description": "英字Google Newsキーワードを国内+海外英語から同時取得するMyFeed（登録検索・自動送り・本文重複判定・6並列更新対応）",
   "permissions": [
     "storage",
     "tabs"
