@@ -4,7 +4,20 @@
 
 ## Current Version
 
-**v0.2.4**
+**v0.2.5**
+
+## v0.2.5
+
+### Google Newsキーワードの国内 / 海外を自動切替
+
+- キーワードに日本語（ひらがな / カタカナ / 漢字）が含まれる場合は日本向けGoogle Newsを使用
+  - `hl=ja&gl=JP&ceid=JP:ja`
+- 日本語を含まず英字が含まれる場合はUS英語版Google Newsを使用
+  - `hl=en-US&gl=US&ceid=US:en`
+- 登録時の自動判定表示に `🇯🇵 国内` / `🌍 海外・英語` を表示
+- `OpenAI 日本` のように日本語を含めれば国内向けとして登録可能
+- 既存の英字キーワードも、明示的な地域設定がない場合は次回更新から海外・英語向けへ自動切替
+- URL登録時にRSSが見つからずGoogle Newsで補完する `site:ドメイン` は従来どおり日本向けを維持
 
 ## v0.2.4
 
@@ -68,6 +81,7 @@
 - `src/category-backup.js` : カテゴリ管理・登録済みフィード検索・JSONバックアップ
 - `src/app-events.js` : UIイベント・D&D
 - `src/source-input.js` : 1入力欄の自動判定
+- `src/google-news-locale.js` : Google Newsキーワードの国内 / 海外自動切替
 - `src/source-discovery.js` : フィード登録・設定・初期化
 - `src/health-reconcile.js` : 古い読込エラー状態の整合
 - `src/youtube-category-ui.js` : YouTubeチャンネル対応・カテゴリUI
@@ -85,7 +99,7 @@
 ## 主な機能
 
 - RSS / Atom / RSS 1.0 RDF
-- Google Newsキーワード
+- Google Newsキーワード（日本語=国内 / 英字=海外・英語を自動切替）
 - X / Nitter RSS
 - YouTubeチャンネルURL登録 + 24文字チャンネルID検証 + 一時エラー再試行
 - 最大6フィード並列取得
