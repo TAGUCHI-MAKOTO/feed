@@ -88,3 +88,13 @@ renderSources = async function(...args) {
 v023ReconcileStoredFeedHealth().then(() => {
   render().catch(error => console.debug('フィード状態整合後の再描画をスキップ:', error));
 });
+
+// v0.2.7 is intentionally loaded after every parser-time script (especially
+// reading-flow.js), because it is the final user-facing duplicate reading policy.
+window.addEventListener('load', () => {
+  if (document.querySelector('script[data-v027-reading-policy]')) return;
+  const script = document.createElement('script');
+  script.src = 'reading-policy-v027.js';
+  script.dataset.v027ReadingPolicy = 'true';
+  document.head.appendChild(script);
+}, { once: true });
