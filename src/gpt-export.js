@@ -1,11 +1,10 @@
 (() => {
   "use strict";
 
-  window.__MYFEED_GPT_EXPORT_VERSION__ = "4.0-gpt-text-tsv";
+  window.__MYFEED_GPT_EXPORT_VERSION__ = "5.0-gpt-text-final";
 
   const SUMMARY_MAX = 800;
-  const TXT_BUTTON_ID = "gptExportTxtBtn";
-  const TSV_BUTTON_ID = "gptExportTsvBtn";
+  const BUTTON_ID = "gptExportBtn";
 
   function cleanCell(value) {
     return String(value ?? "")
@@ -26,23 +25,17 @@
     return Number.isNaN(date.getTime()) ? cleanCell(value) : date.toISOString();
   }
 
-  function exportMeta(items) {
-    return {
-      viewTitle: document.getElementById("viewTitle")?.textContent?.trim() || "MyFeed",
-      displayCount: document.getElementById("articleCount")?.textContent?.trim() || "",
-      exportedAt: new Date().toISOString(),
-      total: items.length
-    };
-  }
-
   function makeText(items) {
-    const meta = exportMeta(items);
+    const viewTitle = document.getElementById("viewTitle")?.textContent?.trim() || "MyFeed";
+    const displayCount = document.getElementById("articleCount")?.textContent?.trim() || "";
+    const exportedAt = new Date().toISOString();
+
     const lines = [
       "MYFEED_GPT_EXPORT",
-      `TOTAL_ARTICLES: ${meta.total}`,
-      `EXPORTED_AT: ${meta.exportedAt}`,
-      `VIEW: ${cleanCell(meta.viewTitle)}`,
-      `DISPLAY_COUNT: ${cleanCell(meta.displayCount)}`,
+      `TOTAL_ARTICLES: ${items.length}`,
+      `EXPORTED_AT: ${exportedAt}`,
+      `VIEW: ${cleanCell(viewTitle)}`,
+      `DISPLAY_COUNT: ${cleanCell(displayCount)}`,
       "",
       "INSTRUCTION: Process every ARTICLE block from 1 through TOTAL_ARTICLES. Do not stop after a partial sample.",
       ""
@@ -64,35 +57,18 @@
     return lines.join("\r\n");
   }
 
-  function makeTsv(items) {
-    const lines = [["ID", "source", "published", "title", "summary", "url"].join("\t")];
-
-    items.forEach((article, index) => {
-      lines.push([
-        index + 1,
-        cleanCell(article.sourceName || article.source || ""),
-        toIso(article.publishedAt || article.published || ""),
-        cleanCell(article.title || ""),
-        trimSummary(article.description || article.summary || ""),
-        cleanCell(article.url || "")
-      ].join("\t"));
-    });
-
-    return lines.join("\r\n");
-  }
-
-  function timestamp() {
+  function makeFilename() {
     const d = new Date();
     const pad = value => String(value).padStart(2, "0");
-    return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    return `myfeed_gpt_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.txt`;
   }
 
-  function downloadFile(content, extension, mimeType) {
-    const blob = new Blob(["\uFEFF", content], { type: `${mimeType};charset=utf-8` });
+  function downloadText(text) {
+    const blob = new Blob(["\uFEFF", text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `myfeed_gpt_${timestamp()}.${extension}`;
+    anchor.download = makeFilename();
     anchor.style.display = "none";
     document.body.appendChild(anchor);
     anchor.click();
@@ -110,23 +86,30 @@
 
     const allArticles = await dbGetAllArticles();
 
-    // MyFeedで現在選択しているフォルダ / フィード / 未読・既読 / 検索条件を反映。
-    // 話題統合は行わず、表示条件に該当する元記事をすべて出力する。
+    // 現在選択中のフォルダ / フィード / 未読・既読 / 検索条件を反映する。
+    // 話題統合は行わず、該当する元記事をすべてGPT向けTXTへ出力する。
     const filtered = getFilteredArticles(allArticles);
 
     return Array.isArray(filtered) ? filtered : [];
   }
 
-  function createExportButton({ id, label, title, format }) {
+  function installButton() {
+    if (document.getElementById(BUTTON_ID)) return;
+
+    const refreshBtn = document.getElementById("refreshBtn");
+    const actions = document.querySelector(".topbar-actions");
+    if (!actions || !refreshBtn) return;
+
     const btn = document.createElement("button");
-    btn.id = id;
+    btn.id = BUTTON_ID;
     btn.type = "button";
     btn.className = "ghost-btn";
-    btn.textContent = label;
-    btn.title = title;
+    btn.textContent = "⇩ GPT用TXT";
+    btn.title = "選択中のフォルダ/フィード等に該当する全記事をGPT向けTXTで出力";
+    actions.insertBefore(btn, refreshBtn);
 
     btn.addEventListener("click", async () => {
-      const defaultText = label;
+      const defaultText = "⇩ GPT用TXT";
       btn.disabled = true;
       btn.textContent = "出力中…";
 
@@ -138,14 +121,8 @@
           return;
         }
 
-        if (format === "txt") {
-          downloadFile(makeText(items), "txt", "text/plain");
-          btn.textContent = `✓ TXT ${items.length}件`;
-        } else {
-          downloadFile(makeTsv(items), "tsv", "text/tab-separated-values");
-          btn.textContent = `✓ TSV ${items.length}件`;
-        }
-
+        downloadText(makeText(items));
+        btn.textContent = `✓ TXT ${items.length}件`;
         setTimeout(() => { btn.textContent = defaultText; }, 2200);
       } catch (error) {
         console.error("[MyFeed GPT Export]", error);
@@ -153,48 +130,18 @@
         btn.title = String(error?.message || error);
         setTimeout(() => {
           btn.textContent = defaultText;
-          btn.title = title;
+          btn.title = "選択中のフォルダ/フィード等に該当する全記事をGPT向けTXTで出力";
         }, 2500);
       } finally {
         setTimeout(() => { btn.disabled = false; }, 300);
       }
     });
-
-    return btn;
   }
 
-  function installButtons() {
-    const refreshBtn = document.getElementById("refreshBtn");
-    const actions = document.querySelector(".topbar-actions");
-    if (!actions || !refreshBtn) return;
-
-    if (!document.getElementById(TXT_BUTTON_ID)) {
-      const txtBtn = createExportButton({
-        id: TXT_BUTTON_ID,
-        label: "⇩ GPT用TXT",
-        title: "選択中のフォルダ/フィード等に該当する全記事をGPT向けTXTで出力",
-        format: "txt"
-      });
-      actions.insertBefore(txtBtn, refreshBtn);
-    }
-
-    if (!document.getElementById(TSV_BUTTON_ID)) {
-      const tsvBtn = createExportButton({
-        id: TSV_BUTTON_ID,
-        label: "⇩ TSV",
-        title: "選択中のフォルダ/フィード等に該当する全記事をTSVで出力",
-        format: "tsv"
-      });
-      actions.insertBefore(tsvBtn, refreshBtn);
-    }
-  }
-
-  installButtons();
+  installButton();
 
   const observer = new MutationObserver(() => {
-    if (!document.getElementById(TXT_BUTTON_ID) || !document.getElementById(TSV_BUTTON_ID)) {
-      installButtons();
-    }
+    if (!document.getElementById(BUTTON_ID)) installButton();
   });
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
