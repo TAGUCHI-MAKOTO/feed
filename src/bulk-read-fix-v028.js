@@ -48,3 +48,14 @@
     if (looksLikeBulkRead) await v028LockDuplicateTopics(ids);
   };
 })();
+
+// GPT向けTSVエクスポート機能をMyFeed本体へ追加する。
+// 別インストーラーを実行せず、拡張機能内の自己スクリプトとして読み込む。
+(() => {
+  if (document.getElementById('myfeed-gpt-export-script')) return;
+  const script = document.createElement('script');
+  script.id = 'myfeed-gpt-export-script';
+  script.src = 'gpt-export.js';
+  script.async = false;
+  document.documentElement.appendChild(script);
+})();
