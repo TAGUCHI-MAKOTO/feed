@@ -49,7 +49,7 @@
   };
 })();
 
-// GPT向けTSVエクスポート機能をMyFeed本体へ追加する。
+// GPT向けTXTエクスポート機能をMyFeed本体へ追加する。
 // 別インストーラーを実行せず、拡張機能内の自己スクリプトとして読み込む。
 (() => {
   if (document.getElementById('myfeed-gpt-export-script')) return;
