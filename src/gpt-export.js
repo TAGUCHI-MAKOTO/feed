@@ -1,6 +1,8 @@
 (() => {
   "use strict";
 
+  window.__MYFEED_GPT_EXPORT_VERSION__ = "3.0-gpt-text";
+
   const SUMMARY_MAX = 800;
   const BUTTON_ID = "gptExportBtn";
 
@@ -23,18 +25,33 @@
     return Number.isNaN(date.getTime()) ? cleanCell(value) : date.toISOString();
   }
 
-  function makeTsv(items) {
-    const lines = [["ID", "source", "published", "title", "summary", "url"].join("\t")];
+  function makeText(items) {
+    const viewTitle = document.getElementById("viewTitle")?.textContent?.trim() || "MyFeed";
+    const displayCount = document.getElementById("articleCount")?.textContent?.trim() || "";
+    const exportedAt = new Date().toISOString();
+
+    const lines = [
+      "MYFEED_GPT_EXPORT",
+      `TOTAL_ARTICLES: ${items.length}`,
+      `EXPORTED_AT: ${exportedAt}`,
+      `VIEW: ${cleanCell(viewTitle)}`,
+      `DISPLAY_COUNT: ${cleanCell(displayCount)}`,
+      "",
+      "INSTRUCTION: Process every ARTICLE block from 1 through TOTAL_ARTICLES. Do not stop after a partial sample.",
+      ""
+    ];
 
     items.forEach((article, index) => {
-      lines.push([
-        index + 1,
-        cleanCell(article.sourceName || article.source || ""),
-        toIso(article.publishedAt || article.published || ""),
-        cleanCell(article.title || ""),
-        trimSummary(article.description || article.summary || ""),
-        cleanCell(article.url || "")
-      ].join("\t"));
+      const number = index + 1;
+      lines.push(
+        `=== ARTICLE ${number} / ${items.length} ===`,
+        `SOURCE: ${cleanCell(article.sourceName || article.source || "")}`,
+        `PUBLISHED: ${toIso(article.publishedAt || article.published || "")}`,
+        `TITLE: ${cleanCell(article.title || "")}`,
+        `SUMMARY: ${trimSummary(article.description || article.summary || "")}`,
+        `URL: ${cleanCell(article.url || "")}`,
+        ""
+      );
     });
 
     return lines.join("\r\n");
@@ -43,12 +60,12 @@
   function makeFilename() {
     const d = new Date();
     const pad = value => String(value).padStart(2, "0");
-    return `myfeed_gpt_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.tsv`;
+    return `myfeed_gpt_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.txt`;
   }
 
-  function downloadTsv(text) {
+  function downloadText(text) {
     const blob = new Blob(["\uFEFF", text], {
-      type: "text/tab-separated-values;charset=utf-8"
+      type: "text/plain;charset=utf-8"
     });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -65,17 +82,17 @@
     if (typeof dbGetAllArticles !== "function") {
       throw new Error("記事データ取得機能が見つかりません");
     }
+    if (typeof getFilteredArticles !== "function") {
+      throw new Error("表示中の記事抽出機能が見つかりません");
+    }
 
     const allArticles = await dbGetAllArticles();
-    const filtered = typeof getFilteredArticles === "function"
-      ? getFilteredArticles(allArticles)
-      : allArticles;
 
-    const stories = typeof buildStoryCards === "function"
-      ? buildStoryCards(filtered, allArticles)
-      : filtered;
+    // MyFeedで現在選択しているフォルダ / フィード / 未読・既読 / 検索条件を反映。
+    // 話題統合は行わず、表示条件に該当する元記事をすべて出力する。
+    const filtered = getFilteredArticles(allArticles);
 
-    return Array.isArray(stories) ? stories : [];
+    return Array.isArray(filtered) ? filtered : [];
   }
 
   function installButton() {
@@ -89,12 +106,12 @@
     btn.id = BUTTON_ID;
     btn.type = "button";
     btn.className = "ghost-btn";
-    btn.textContent = "⇩ GPT用TSV";
-    btn.title = "現在の表示条件に合う記事をGPT用TSVで出力";
+    btn.textContent = "⇩ GPT用TXT v3";
+    btn.title = "v3: 選択中のフォルダ/フィード等に該当する全記事をGPT向けTXTで出力";
     actions.insertBefore(btn, refreshBtn);
 
     btn.addEventListener("click", async () => {
-      const defaultText = "⇩ GPT用TSV";
+      const defaultText = "⇩ GPT用TXT v3";
       btn.disabled = true;
       btn.textContent = "出力中…";
 
@@ -106,8 +123,8 @@
           return;
         }
 
-        downloadTsv(makeTsv(items));
-        btn.textContent = `✓ ${items.length}件`;
+        downloadText(makeText(items));
+        btn.textContent = `✓ TXT ${items.length}件`;
         setTimeout(() => { btn.textContent = defaultText; }, 2200);
       } catch (error) {
         console.error("[MyFeed GPT Export]", error);
